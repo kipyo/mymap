@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mainTabTitle">만보기 화면</string>
+    <string name="listTabTitle">만보기 기록</string>
+</resources>
