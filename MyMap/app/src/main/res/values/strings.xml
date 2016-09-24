@@ -4,4 +4,7 @@
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="mainTabTitle">Main Screen</string>
     <string name="listTabTitle">List</string>
+    <string name="currentLocation">Current location</string>
+    <string name="startButton">Start</string>
+    <string name="stopButton">Stop</string>
 </resources>
