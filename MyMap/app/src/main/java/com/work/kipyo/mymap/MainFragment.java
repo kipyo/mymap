@@ -1,5 +1,9 @@
 package com.work.kipyo.mymap;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,6 +26,8 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     private TextView mLocationTextView;
     private Button mFunctionButton;
     private boolean mRunningMap = false;
+    private int mMileage = 0;
+    private float mKilometers = 0;
     public MainFragment() {
     }
 
@@ -30,10 +36,15 @@ public class MainFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         mMileageTextView = (TextView) rootView.findViewById(R.id.mileageText);
+        mMileageTextView.setText(String.valueOf(mMileage));
         mKmTextView = (TextView) rootView.findViewById(R.id.kmText);
+        mKmTextView.setText(String.format("%.2f", mKilometers));
         mLocationTextView = (TextView) rootView.findViewById(R.id.locationText);
         mFunctionButton = (Button) rootView.findViewById(R.id.functionButton);
         mFunctionButton.setOnClickListener(this);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(MiniViewService.UPDATE_ACTION);
+        getContext().registerReceiver(mBRReceiver, filter);
         return rootView;
     }
 
@@ -43,18 +54,30 @@ public class MainFragment extends Fragment implements View.OnClickListener {
             if (mRunningMap == false) {
                 mFunctionButton.setText(getString(R.string.stopButton));
                 mFunctionButton.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
-                //TODO start
+                getContext().startService(new Intent(getContext(), MiniViewService.class));
                 mRunningMap = true;
-                Toast.makeText(getContext(), "start", Toast.LENGTH_SHORT).show();
             } else {
                 mFunctionButton.setText(getString(R.string.startButton));
                 mFunctionButton.setBackgroundColor(getResources().getColor(android.R.color.holo_red_light));
-                //TODO stop
+                getContext().stopService(new Intent(getContext(), MiniViewService.class));
                 mRunningMap = false;
-                Toast.makeText(getContext(), "stop", Toast.LENGTH_SHORT).show();
             }
         } else {
             Log.e(TAG, "Not support view button: id = " + view.getId());
         }
     }
+
+    private BroadcastReceiver mBRReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (MiniViewService.UPDATE_ACTION.equals(intent.getAction())) {
+                mMileage = intent.getIntExtra(MiniViewService.KEY_MILEAGE, 0);
+                mMileageTextView.setText(String.valueOf(mMileage));
+                mMileageTextView.invalidate();
+                mKmTextView.setText(String.format("%.2f", mKilometers));
+                mKmTextView.invalidate();
+            }
+        }
+    };
 }
+
