@@ -74,6 +74,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
                 mMileage = intent.getIntExtra(MiniViewService.KEY_MILEAGE, 0);
                 mMileageTextView.setText(String.valueOf(mMileage));
                 mMileageTextView.invalidate();
+                mKilometers = intent.getFloatExtra(MiniViewService.KEY_KILOMETERS, 0);
                 mKmTextView.setText(String.format("%.2f", mKilometers));
                 mKmTextView.invalidate();
             }

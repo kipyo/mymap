@@ -168,6 +168,7 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        //Do nothing
     }
 }
 
