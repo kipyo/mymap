@@ -23,7 +23,6 @@ public class ListFragment extends Fragment implements LoaderManager.LoaderCallba
 
     private ListView mListView;
     private ListCursorAdapter mListAdapter;
-    private final static Boolean FOR_TEST = false;
     public ListFragment() {
     }
 
@@ -32,13 +31,8 @@ public class ListFragment extends Fragment implements LoaderManager.LoaderCallba
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.list_fragment, container, false);
         mListView = (ListView)rootView.findViewById(R.id.item_list);
-        if (FOR_TEST) {
-            TestCursor testCursor = new TestCursor();
-            mListAdapter = new ListCursorAdapter(getActivity(), testCursor.getCursor());
-        } else {
-            getLoaderManager().initLoader(0, null, this);
-            mListAdapter = new ListCursorAdapter(getActivity(), null);
-        }
+        getLoaderManager().initLoader(0, null, this);
+        mListAdapter = new ListCursorAdapter(getActivity(), null);
         mListView.setAdapter(mListAdapter);
 
         return rootView;

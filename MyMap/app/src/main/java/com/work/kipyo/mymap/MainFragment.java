@@ -149,25 +149,9 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         insertData();
     }
 
-    //for test
-    int date = 1;
-    int dateCount = 0;
-
     private void insertData() {
-        //for test block start
-        /*---------- start ---------------*/
-        //Date date = new Date(System.currentTimeMillis());
-        //String currentDateTimeString = new SimpleDateFormat("yyyy.MM.dd").format(date);
-        StringBuilder sb = new StringBuilder();
-        sb.append("2016.08.");
-        if (dateCount > 3) {
-            dateCount = 0;
-            date++;
-        }
-        dateCount++;
-        sb.append(String.format("%2d", date));
-        String currentDateTimeString = sb.toString();
-        /*---------- end ---------------*/
+        Date date = new Date(System.currentTimeMillis());
+        String currentDateTimeString = new SimpleDateFormat("yyyy.MM.dd").format(date);
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.DATE_FIELD, currentDateTimeString);
 
