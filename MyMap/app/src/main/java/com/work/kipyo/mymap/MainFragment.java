@@ -84,8 +84,6 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         return rootView;
     }
 
-    //TODO
-    /*
     private void updateLocationInfo() {
         //GPS_PROVIDER: GPS를 통해 위치를 알려줌
         boolean isGPSEnabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -93,31 +91,21 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         boolean isNetworkEnabled = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
         if (isGPSEnabled && isNetworkEnabled) {
-            //선택된 프로바이더를 사용해 위치정보를 업데이트
-            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, mLocationListener);
             mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, mLocationListener);
             String locationProvider = LocationManager.GPS_PROVIDER;
             Location lastKnownLocation = mLocationManager.getLastKnownLocation(locationProvider);
-                if (lastKnownLocation != null) {
+            if (lastKnownLocation != null) {
                 double lng = lastKnownLocation.getLongitude();
                 double lat = lastKnownLocation.getLatitude();
                 Log.d(TAG, "longtitude=" + lng + ", latitude=" + lat);
+                Toast.makeText(getActivity(), "longtitude=" + lng + ", latitude=" + lat, Toast.LENGTH_SHORT).show();
             }
         }else{
             Toast.makeText(getActivity(), "GPS 정보를 얻을 수 없습니다.", Toast.LENGTH_SHORT).show();
         }
     }
-    */
+
     @Override
     public void onClick(View view) {
         if (mFunctionButton.getId() == view.getId()) {
@@ -236,8 +224,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
                 mFunctionButton.setText(getString(R.string.stopButton));
                 mFunctionButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
                 mRunningMap = true;
-                //TODO
-//                updateLocationInfo();
+                updateLocationInfo();
             }
         }
     };
@@ -247,6 +234,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         @Override
         public void onLocationChanged(Location location) {
             Log.d(TAG, "Latitude=" + location.getLatitude() + ", Longtitude=" + location.getLongitude());
+            Toast.makeText(getActivity(), "Latitude=" + location.getLatitude() + ", Longtitude=" + location.getLongitude(), Toast.LENGTH_SHORT).show();
         }
 
         @Override

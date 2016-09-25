@@ -1,12 +1,16 @@
 package com.work.kipyo.mymap;
 
+import android.Manifest;
 import android.app.*;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,22 +27,47 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Fragment mMainFragment;
     private Fragment mListFragment;
     private boolean mIsMainShow = false;
-    private final static int PERMISSION_RESULT = 1;
+    private final static int LOCATION_PERMISSION = 1;
+    private final static int PERMISSION_RESULT = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //MiniView를 다른 앱 화면 위에 띄우기 위한 퍼미션 확인
         if (Build.VERSION.SDK_INT >= 23) {
             boolean canDrawOverlays = Settings.canDrawOverlays(this);
             if (!canDrawOverlays) {
+
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivityForResult(intent, PERMISSION_RESULT);
             }
         }
-        initActivity();
+        //현위치 정보를 가져오기 위한 퍼미션 확인
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
+            }
+        } else {
+            initActivity();
+        }
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch(requestCode) {
+            case LOCATION_PERMISSION:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    initActivity();
+                } else {
+                    Toast.makeText(this, "이 앱은 위치 정보를 얻기위한 권한이 필요합니다.", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                break;
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void initActivity() {
