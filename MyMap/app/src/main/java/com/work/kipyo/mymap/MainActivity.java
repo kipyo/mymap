@@ -37,7 +37,6 @@ public class MainActivity extends NMapActivity implements View.OnClickListener, 
     private MainFragment mMainFragment;
     private ListFragment mListFragment;
     private boolean mIsMainShow = false;
-    private final static int LOCATION_PERMISSION = 1;
     private final static int PERMISSION_RESULT = 2;
     private LocationManager mLocationManager;
     private MyLocationListener mLocationListener;
@@ -54,37 +53,9 @@ public class MainActivity extends NMapActivity implements View.OnClickListener, 
 
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivityForResult(intent, PERMISSION_RESULT);
             }
         }
-        //현위치 정보를 가져오기 위한 퍼미션 확인
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
-            }
-        } else {
-            initActivity();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch(requestCode) {
-            case LOCATION_PERMISSION:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                    initActivity();
-                } else {
-                    Toast.makeText(this, "이 앱은 위치 정보를 얻기위한 권한이 필요합니다.", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-                break;
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    private void initActivity() {
         setContentView(R.layout.activity_main);
         mMainButton = (Button)findViewById(R.id.mainButton);
         mMainButton.setOnClickListener(this);
