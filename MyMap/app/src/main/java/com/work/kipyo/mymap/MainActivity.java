@@ -2,8 +2,12 @@ package com.work.kipyo.mymap;
 
 import android.Manifest;
 import android.app.*;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,17 +22,25 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.nhn.android.maps.NMapActivity;
 import com.nhn.android.maps.NMapView;
+import com.nhn.android.maps.nmapmodel.NMapError;
+import com.nhn.android.maps.nmapmodel.NMapPlacemark;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends NMapActivity implements View.OnClickListener, MainFragment.LocationInter {
 
+    private static final String TAG = "MainActivity";
     private Button mMainButton;
     private Button mListButton;
-    private Fragment mMainFragment;
-    private Fragment mListFragment;
+    private MainFragment mMainFragment;
+    private ListFragment mListFragment;
     private boolean mIsMainShow = false;
     private final static int LOCATION_PERMISSION = 1;
     private final static int PERMISSION_RESULT = 2;
+    private LocationManager mLocationManager;
+    private MyLocationListener mLocationListener;
+    private NMapView mMapView;
+    private final static String clientId = "hFzyVZrHJSjZTpDJxdel";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +89,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mListButton = (Button)findViewById(R.id.listButton);
         mListButton.setOnClickListener(this);
         mMainFragment = new MainFragment();
+        mMainFragment.setLocationInter(this);
         mListFragment = new ListFragment();
         FragmentManager fm = getFragmentManager();
         FragmentTransaction fragmentTransaction = fm.beginTransaction();
@@ -84,6 +97,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
         fragmentTransaction.commit();
         mIsMainShow = true;
         updateButtonStyle();
+        //현재 위치좌표 가져오기
+        mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        mLocationListener = new MyLocationListener();
+        // create map view
+        mMapView = new NMapView(this);
+        // set Client ID for Open MapViewer Library
+        mMapView.setClientId(clientId);
+        // set data provider listener
+        super.setMapDataProviderListener(onDataProviderListener);
+
     }
 
     private void updateButtonStyle() {
@@ -153,6 +176,68 @@ public class MainActivity extends Activity implements View.OnClickListener {
         intent.setAction(MiniViewService.SHOW_MINIVIEW);
         intent.putExtra(MiniViewService.KEY_SHOW, true);
         sendBroadcast(intent);
+        mLocationManager.removeUpdates(mLocationListener);
     }
 
+    /* NMapDataProvider Listener */
+    private final OnDataProviderListener onDataProviderListener = new OnDataProviderListener() {
+        @Override
+        public void onReverseGeocoderResponse(NMapPlacemark nMapPlacemark, NMapError nMapError) {
+            if (nMapError != null) {
+                Log.e(TAG, "Failed to findPlacemarkAtLocation: error=" + nMapError.toString());
+                return;
+            }
+            Log.i(TAG, "onReverseGeocoderResponse: placeMark=" + nMapPlacemark.toString());
+            if (mIsMainShow) {
+                mMainFragment.updateLocationText(nMapPlacemark.toString());
+            }
+        }
+    };
+
+    @Override
+    public void updateLocation() {
+        //GPS_PROVIDER: GPS를 통해 위치를 알려줌
+        boolean isGPSEnabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        //NETWORK_PROVIDER: WI-FI 네트워크나 통신사의 기지국 정보를 통해 위치를 알려줌
+        boolean isNetworkEnabled = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        if (isGPSEnabled && isNetworkEnabled) {
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, mLocationListener);
+            String locationProvider = LocationManager.GPS_PROVIDER;
+            Location lastKnownLocation = mLocationManager.getLastKnownLocation(locationProvider);
+            if (lastKnownLocation != null) {
+                double lng = lastKnownLocation.getLongitude();
+                double lat = lastKnownLocation.getLatitude();
+                findPlacemarkAtLocation(lng, lat);
+                Log.i(TAG, "lastKnownLocation Longtitude=" + lng + ", Latitude=" + lat);
+            }
+        }else{
+            Toast.makeText(this, "GPS 정보를 얻을 수 없습니다.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private class MyLocationListener implements LocationListener {
+
+        @Override
+        public void onLocationChanged(Location location) {
+            Log.i(TAG, "Latitude=" + location.getLatitude() + ", Longtitude=" + location.getLongitude());
+            findPlacemarkAtLocation(location.getLongitude(), location.getLatitude());
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            //Do nothing
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+            //Do nothing
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            //Do nothing
+        }
+    }
 }

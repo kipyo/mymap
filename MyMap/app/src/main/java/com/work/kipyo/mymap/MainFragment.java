@@ -35,6 +35,9 @@ import java.util.Date;
 
 public class MainFragment extends Fragment implements View.OnClickListener {
 
+    interface LocationInter {
+        public abstract void updateLocation();
+    }
     private static final String TAG = "MainFragment";
     private TextView mMileageTextView;
     private TextView mKmTextView;
@@ -43,8 +46,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     private boolean mRunningMap = false;
     private int mMileage = 0;
     private int mMeter = 0;
-    private LocationManager mLocationManager;
-    private MyLocationListener mLocationListener;
+    private LocationInter mLocationInter;
     private final static int START_MAP = 1;
     private final static int STOP_MAP = 1;
     private final static String RUNNINGMAP_STATE = "RunningMap";
@@ -54,6 +56,9 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     public MainFragment() {
     }
 
+    public void setLocationInter(LocationInter inter) {
+        mLocationInter = inter;
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,32 +83,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         IntentFilter filter = new IntentFilter();
         filter.addAction(MiniViewService.UPDATE_ACTION);
         getActivity().registerReceiver(mBRReceiver, filter);
-        //현재 위치좌표 가져오기
-        mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        mLocationListener = new MyLocationListener();
         return rootView;
-    }
-
-    private void updateLocationInfo() {
-        //GPS_PROVIDER: GPS를 통해 위치를 알려줌
-        boolean isGPSEnabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        //NETWORK_PROVIDER: WI-FI 네트워크나 통신사의 기지국 정보를 통해 위치를 알려줌
-        boolean isNetworkEnabled = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-        if (isGPSEnabled && isNetworkEnabled) {
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, mLocationListener);
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, mLocationListener);
-            String locationProvider = LocationManager.GPS_PROVIDER;
-            Location lastKnownLocation = mLocationManager.getLastKnownLocation(locationProvider);
-            if (lastKnownLocation != null) {
-                double lng = lastKnownLocation.getLongitude();
-                double lat = lastKnownLocation.getLatitude();
-                Log.d(TAG, "longtitude=" + lng + ", latitude=" + lat);
-                Toast.makeText(getActivity(), "longtitude=" + lng + ", latitude=" + lat, Toast.LENGTH_SHORT).show();
-            }
-        }else{
-            Toast.makeText(getActivity(), "GPS 정보를 얻을 수 없습니다.", Toast.LENGTH_SHORT).show();
-        }
     }
 
     @Override
@@ -202,6 +182,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         intent.setAction(MiniViewService.SHOW_MINIVIEW);
         intent.putExtra(MiniViewService.KEY_SHOW, false);
         getActivity().sendBroadcast(intent);
+        mLocationInter.updateLocation();
     }
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -224,33 +205,14 @@ public class MainFragment extends Fragment implements View.OnClickListener {
                 mFunctionButton.setText(getString(R.string.stopButton));
                 mFunctionButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
                 mRunningMap = true;
-                updateLocationInfo();
+                mLocationInter.updateLocation();
             }
         }
     };
 
-    private class MyLocationListener implements LocationListener {
-
-        @Override
-        public void onLocationChanged(Location location) {
-            Log.d(TAG, "Latitude=" + location.getLatitude() + ", Longtitude=" + location.getLongitude());
-            Toast.makeText(getActivity(), "Latitude=" + location.getLatitude() + ", Longtitude=" + location.getLongitude(), Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-            //Do nothing
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-            //Do nothing
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            //Do nothing
-        }
+    public void updateLocationText(String location) {
+        mLocationTextView.setText(location);
+        mLocationTextView.invalidate();
     }
 }
 
