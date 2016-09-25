@@ -174,7 +174,7 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
                 float positionDelta = Math.abs(x + y + z - (mPrivData.x + mPrivData.y + mPrivData.z));
                 float delta = positionDelta / timeGap * 10000;
                 //1보로 인정 가능한 이동 거리
-                if (delta > 900) {
+                if (delta > 1200) {
                     mStep ++;
                     mMileageTextView.setText(String.valueOf(mStep));
                     mMileageTextView.invalidate();
