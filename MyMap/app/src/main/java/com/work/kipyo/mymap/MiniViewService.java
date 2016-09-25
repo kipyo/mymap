@@ -1,16 +1,20 @@
 package com.work.kipyo.mymap;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -37,11 +41,13 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
     private int mStep = 0;
     private int mMeter = 0;
     public final static String UPDATE_ACTION = "com.work.kipyo.mymap.UpdateMileage";
+    public final static String KEY_RUNNING = "KeyRunning";
     public final static String KEY_MILEAGE = "KeyMileage";
     public final static String KEY_METER = "KeyMeter";
     public final static String SHOW_MINIVIEW = "com.work.kipyo.mymap.ShowMiniView";
     public final static String KEY_SHOW = "KeyShow";
-
+    private SharedPreferences mPreference;
+    public final static String MAP_PREFERENCE = "MapPreference";
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -59,9 +65,7 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
         registerReceiver(mBRReceiver, filter);
 
         mMileageTextView = (TextView) mView.findViewById(R.id.miniMileageText);
-        mMileageTextView.setText(String.valueOf(mStep));
         mMiniKmText = (TextView) mView.findViewById(R.id.miniKmText);
-        mMiniKmText.setText(getMeterText(mMeter));
         mView.setOnTouchListener(this);
         mParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -79,6 +83,14 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
         mPrivData = new PrivData();
         mStep = 0;
         mMeter = 0;
+        mPreference = getSharedPreferences(MAP_PREFERENCE, MODE_PRIVATE);
+        mStep = mPreference.getInt(KEY_MILEAGE, 0);
+        mMeter = mPreference.getInt(KEY_METER, 0);
+        mMileageTextView.setText(String.valueOf(mStep));
+        mMiniKmText.setText(getMeterText(mMeter));
+
+        updatePreference();
+        unregisterRestartAlarm();
     }
 
     @Override
@@ -98,8 +110,33 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
         if (mSensorManager != null) {
             mSensorManager.unregisterListener(this);
         }
+        registerRestartAlarm();
     }
 
+    private void registerRestartAlarm() {
+        Intent intent = new Intent(this, RestartService.class);
+        intent.setAction(RestartService.RESTART_ACTION);
+        PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
+        long firstTime = SystemClock.elapsedRealtime();
+        firstTime += 2*1000;
+        AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
+        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, 10*1000, sender);
+    }
+    private void unregisterRestartAlarm() {
+        Intent intent = new Intent(this, RestartService.class);
+        intent.setAction(RestartService.RESTART_ACTION);
+        PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
+        AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
+        am.cancel(sender);
+    }
+    private void updatePreference() {
+        SharedPreferences.Editor editor = mPreference.edit();
+        editor.putBoolean(KEY_RUNNING, true);
+        editor.putInt(KEY_MILEAGE, mStep);
+        editor.putInt(KEY_METER, mMeter);
+        editor.commit();
+
+    }
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         switch (event.getAction()) {
@@ -152,13 +189,14 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
                 float positionDelta = Math.abs(x + y + z - (mPrivData.x + mPrivData.y + mPrivData.z));
                 float delta = positionDelta / timeGap * 10000;
                 //1보로 인정 가능한 이동 거리
-                if (delta > 800) {
+                if (delta > 880) {
                     mStep ++;
                     mMileageTextView.setText(String.valueOf(mStep));
                     mMileageTextView.invalidate();
-                    mMeter += (int)(positionDelta / 10);
+                    mMeter += (int)(positionDelta / 100);
                     mMiniKmText.setText(getMeterText(mMeter));
                     mMiniKmText.invalidate();
+                    updatePreference();
                     sendCurrentData();
                 }
                 mPrivData.x = x;

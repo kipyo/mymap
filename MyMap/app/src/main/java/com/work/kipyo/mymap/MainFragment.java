@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.icu.text.DateFormat;
@@ -52,7 +53,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     private final static String RUNNINGMAP_STATE = "RunningMap";
     private final static String MILEAGE = "Mileage";
     private final static String METER = "Meter";
-
+    private SharedPreferences mPreference;
     public MainFragment() {
     }
 
@@ -74,13 +75,19 @@ public class MainFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         mMileageTextView = (TextView) rootView.findViewById(R.id.mileageText);
-        mMileageTextView.setText(String.valueOf(mMileage));
         mKmTextView = (TextView) rootView.findViewById(R.id.kmText);
-        mKmTextView.setText(MiniViewService.getMeterText(mMeter));
         mLocationTextView = (TextView) rootView.findViewById(R.id.locationText);
         mFunctionButton = (Button) rootView.findViewById(R.id.functionButton);
         mFunctionButton.setOnClickListener(this);
-
+        mPreference = getActivity().getSharedPreferences(MiniViewService.MAP_PREFERENCE, Context.MODE_PRIVATE);
+        mMileage = mPreference.getInt(MiniViewService.KEY_MILEAGE, 0);
+        mMeter = mPreference.getInt(MiniViewService.KEY_METER, 0);
+        mRunningMap = mPreference.getBoolean(MiniViewService.KEY_RUNNING, false);
+        if (mRunningMap) {
+            startMap();
+        }
+        mMileageTextView.setText(String.valueOf(mMileage));
+        mKmTextView.setText(MiniViewService.getMeterText(mMeter));
         return rootView;
     }
 
@@ -158,10 +165,16 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         mMeter = 0;
         mMileageTextView.setText(String.valueOf(mMileage));
         mMileageTextView.invalidate();
-        mKmTextView.setText(String.valueOf(mMeter));
+        mKmTextView.setText(MiniViewService.getMeterText(mMeter));
         mKmTextView.invalidate();
+        clearPreference();
     }
 
+    private void clearPreference() {
+        SharedPreferences.Editor editor = mPreference.edit();
+        editor.clear();
+        editor.commit();
+    }
     private boolean permissionCheck() {
         if (Build.VERSION.SDK_INT >= 23) {
             boolean canDrawOverlays = Settings.canDrawOverlays(getActivity());
@@ -187,7 +200,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         super.onSaveInstanceState(outState);
         outState.putBoolean(RUNNINGMAP_STATE, mRunningMap);
         outState.putInt(MILEAGE, mMileage);
-        outState.putFloat(METER, mMeter);
+        outState.putInt(METER, mMeter);
     }
 
     public void updateTextView(Intent intent) {

@@ -12,43 +12,61 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:orientation="horizontal">
+        android:layout_height="150dp"
+        >
         <ImageView
+            android:id="@+id/runIcon"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:src="@drawable/main_icon"/>
-
-        <TextView
-            android:id="@+id/mileageText"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:orientation="vertical"
             android:layout_weight="1"
-            android:text="2233"
-            android:textSize="70sp"
-            android:gravity="right|center_vertical"
-            />
+            android:background="@drawable/layout_border">
+            <TextView
+                android:id="@+id/mileageText"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="2233"
+                android:textSize="70sp"
+                android:layout_gravity="right"
+                />
+            <TextView
+                android:id="@+id/kmText"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:text="55m"
+                android:textSize="40sp"
+                android:layout_gravity="right"
+                />
+        </LinearLayout>
     </LinearLayout>
+
     <Space
         android:layout_width="match_parent"
-        android:layout_height="30dp" />
-    <TextView
-        android:id="@+id/kmText"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:text="55m"
-        android:textSize="40sp"
-        android:layout_gravity="right|center_vertical"
-        />
+        android:layout_height="25dp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@android:color/darker_gray"/>
     <Space
         android:layout_width="match_parent"
-        android:layout_height="30dp" />
+        android:layout_height="25dp" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/currentLocation"
         android:layout_gravity="center_horizontal"
-        android:textSize="20sp"/>
+        android:textSize="20sp"
+        android:textColor="@android:color/holo_purple"/>
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="5dp" />
     <TextView
         android:id="@+id/locationText"
         android:layout_width="match_parent"
