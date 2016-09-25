@@ -24,6 +24,9 @@
             </intent-filter>
         </activity>
         <service android:name=".MiniViewService" />
+        <provider
+            android:name=".MapProvider"
+            android:authorities="com.work.kipyo.mymap.MapProvider" />
     </application>
 
 </manifest>

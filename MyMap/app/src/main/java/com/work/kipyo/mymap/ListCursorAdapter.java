@@ -2,10 +2,10 @@ package com.work.kipyo.mymap;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 /**
@@ -18,10 +18,10 @@ public class ListCursorAdapter extends CursorAdapter {
     private static final int DB_MILEAGE = 2;
     private static final int DB_KM = 3;
     public static final String[] COLUMNS = {
-            "id",
-            "date",
-            "mileage",
-            "km"
+            DatabaseHelper.ID,
+            DatabaseHelper.DATE_FIELD,
+            DatabaseHelper.MILEAGE_FIELD,
+            DatabaseHelper.METER_FIELD,
     };
 
     public ListCursorAdapter(Context context, Cursor cursor) {
@@ -30,7 +30,7 @@ public class ListCursorAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.map_list_view, null);
         return view;
     }
@@ -40,7 +40,8 @@ public class ListCursorAdapter extends CursorAdapter {
         if (cursor != null) {
             ((TextView) view.findViewById(R.id.dateTextView)).setText(cursor.getString(DB_DATE));
             ((TextView) view.findViewById(R.id.mileageTextView)).setText(cursor.getString(DB_MILEAGE));
-            ((TextView) view.findViewById(R.id.kmTextView)).setText(cursor.getString(DB_KM));
+            String meter = cursor.getString(DB_KM);
+            ((TextView) view.findViewById(R.id.kmTextView)).setText(MiniViewService.getMeterText(Integer.valueOf(meter)));
         }
     }
 }

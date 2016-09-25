@@ -23,7 +23,7 @@ public class ListFragment extends Fragment implements LoaderManager.LoaderCallba
 
     private ListView mListView;
     private ListCursorAdapter mListAdapter;
-    private final static Boolean FOR_TEST = true;
+    private final static Boolean FOR_TEST = false;
     public ListFragment() {
     }
 
@@ -46,15 +46,21 @@ public class ListFragment extends Fragment implements LoaderManager.LoaderCallba
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        //TODO
-        Uri uri = Uri.parse("");
+        Uri uri = Uri.parse("content://" + MapProvider.MAP_URI);
         String selection ="";
-        return new CursorLoader(getActivity(), uri, ListCursorAdapter.COLUMNS, selection, null, ListCursorAdapter.COLUMNS[ListCursorAdapter.DB_DATE] + " COLLATE LOCALIZED ASC");
+        return new CursorLoader(getActivity(), uri, ListCursorAdapter.COLUMNS, selection, null, ListCursorAdapter.COLUMNS[ListCursorAdapter.DB_DATE] + " COLLATE LOCALIZED DESC");
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        mListAdapter.swapCursor(cursor);
+        if (cursor != null && cursor.getCount() > 0) {
+            mListAdapter.swapCursor(cursor);
+            getActivity().findViewById(R.id.item_list).setVisibility(View.VISIBLE);
+            getActivity().findViewById(R.id.emptyList).setVisibility(View.GONE);
+        } else {
+            getActivity().findViewById(R.id.emptyList).setVisibility(View.VISIBLE);
+            getActivity().findViewById(R.id.item_list).setVisibility(View.GONE);
+        }
     }
 
     @Override

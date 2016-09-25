@@ -35,10 +35,10 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
     private Sensor mSensor;
     private PrivData mPrivData; //이전 시간의 좌표값을 저장하기 위한 변수
     private int mStep = 0;
-    private float mKilometers = 0;
+    private int mMeter = 0;
     public final static String UPDATE_ACTION = "com.work.kipyo.mymap.UpdateMileage";
     public final static String KEY_MILEAGE = "KeyMileage";
-    public final static String KEY_KILOMETERS = "KeyKilometers";
+    public final static String KEY_METER = "KeyMeter";
     public final static String SHOW_MINIVIEW = "com.work.kipyo.mymap.ShowMiniView";
     public final static String KEY_SHOW = "KeyShow";
 
@@ -61,7 +61,7 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
         mMileageTextView = (TextView) mView.findViewById(R.id.miniMileageText);
         mMileageTextView.setText(String.valueOf(mStep));
         mMiniKmText = (TextView) mView.findViewById(R.id.miniKmText);
-        mMiniKmText.setText(String.valueOf(mKilometers));
+        mMiniKmText.setText(getMeterText(mMeter));
         mView.setOnTouchListener(this);
         mParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -78,7 +78,7 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mPrivData = new PrivData();
         mStep = 0;
-        mKilometers = 0;
+        mMeter = 0;
     }
 
     @Override
@@ -156,8 +156,8 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
                     mStep ++;
                     mMileageTextView.setText(String.valueOf(mStep));
                     mMileageTextView.invalidate();
-                    mKilometers += positionDelta / 10000;
-                    mMiniKmText.setText(String.format("%.2f", mKilometers));
+                    mMeter += (int)(positionDelta / 10);
+                    mMiniKmText.setText(getMeterText(mMeter));
                     mMiniKmText.invalidate();
                     sendCurrentData();
                 }
@@ -172,7 +172,7 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
         Intent intent = new Intent();
         intent.setAction(UPDATE_ACTION);
         intent.putExtra(KEY_MILEAGE, mStep);
-        intent.putExtra(KEY_KILOMETERS, mKilometers);
+        intent.putExtra(KEY_METER, mMeter);
         sendBroadcast(intent);
     }
     @Override
@@ -193,6 +193,20 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
             }
         }
     };
+
+    // 1000이 넘어가는 경우 KM 단위로 표시하기 위한 함수
+    public static String getMeterText(int meter) {
+        StringBuilder sb = new StringBuilder();
+        if (meter >= 1000) {
+            float flMeter = (float)meter;
+            sb.append(String.format("%.2f", flMeter/1000));
+            sb.append("km");
+        } else {
+            sb.append(String.format("%3d", meter));
+            sb.append("m");
+        }
+        return sb.toString();
+    }
 }
 
 class PrivData {

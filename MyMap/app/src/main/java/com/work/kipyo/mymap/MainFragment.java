@@ -3,10 +3,14 @@ package com.work.kipyo.mymap;
 import android.Manifest;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.icu.text.DateFormat;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -14,7 +18,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +25,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by kipyo on 2016-09-23.
@@ -36,14 +42,14 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     private Button mFunctionButton;
     private boolean mRunningMap = false;
     private int mMileage = 0;
-    private float mKilometers = 0;
+    private int mMeter = 0;
     private LocationManager mLocationManager;
     private MyLocationListener mLocationListener;
     private final static int START_MAP = 1;
     private final static int STOP_MAP = 1;
     private final static String RUNNINGMAP_STATE = "RunningMap";
     private final static String MILEAGE = "Mileage";
-    private final static String KILOMETERS = "Kilometers";
+    private final static String METER = "Meter";
 
     public MainFragment() {
     }
@@ -54,7 +60,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         if (savedInstanceState != null) {
             mRunningMap = savedInstanceState.getBoolean(RUNNINGMAP_STATE, false);
             mMileage = savedInstanceState.getInt(MILEAGE, 0);
-            mKilometers = savedInstanceState.getFloat(KILOMETERS, 0);
+            mMeter = savedInstanceState.getInt(METER, 0);
         }
     }
 
@@ -65,7 +71,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         mMileageTextView = (TextView) rootView.findViewById(R.id.mileageText);
         mMileageTextView.setText(String.valueOf(mMileage));
         mKmTextView = (TextView) rootView.findViewById(R.id.kmText);
-        mKmTextView.setText(String.format("%.2f", mKilometers));
+        mKmTextView.setText(MiniViewService.getMeterText(mMeter));
         mLocationTextView = (TextView) rootView.findViewById(R.id.locationText);
         mFunctionButton = (Button) rootView.findViewById(R.id.functionButton);
         mFunctionButton.setOnClickListener(this);
@@ -78,6 +84,8 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         return rootView;
     }
 
+    //TODO
+    /*
     private void updateLocationInfo() {
         //GPS_PROVIDER: GPS를 통해 위치를 알려줌
         boolean isGPSEnabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -109,6 +117,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
             Toast.makeText(getActivity(), "GPS 정보를 얻을 수 없습니다.", Toast.LENGTH_SHORT).show();
         }
     }
+    */
     @Override
     public void onClick(View view) {
         if (mFunctionButton.getId() == view.getId()) {
@@ -137,6 +146,70 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         mFunctionButton.setText(getString(R.string.startButton));
         mFunctionButton.setBackgroundColor(getResources().getColor(android.R.color.holo_red_light));
         mRunningMap = false;
+        insertData();
+    }
+
+    //for test
+    int date = 1;
+    int dateCount = 0;
+
+    private void insertData() {
+        //for test block start
+        /*---------- start ---------------*/
+        //Date date = new Date(System.currentTimeMillis());
+        //String currentDateTimeString = new SimpleDateFormat("yyyy.MM.dd").format(date);
+        StringBuilder sb = new StringBuilder();
+        sb.append("2016.08.");
+        if (dateCount > 3) {
+            dateCount = 0;
+            date++;
+        }
+        dateCount++;
+        sb.append(String.format("%2d", date));
+        String currentDateTimeString = sb.toString();
+        /*---------- end ---------------*/
+        ContentValues values = new ContentValues();
+        values.put(DatabaseHelper.DATE_FIELD, currentDateTimeString);
+
+        Uri uri = Uri.parse("content://" + MapProvider.MAP_URI);
+        ContentResolver cr = getActivity().getContentResolver();
+        String[] projection = { DatabaseHelper.ID, DatabaseHelper.DATE_FIELD, DatabaseHelper.MILEAGE_FIELD, DatabaseHelper.METER_FIELD };
+        String selection = DatabaseHelper.DATE_FIELD + "=?";
+        Cursor cursor = cr.query(uri, projection, selection, new String[] {currentDateTimeString}, null);
+        if (cursor != null) {
+            if (cursor.getCount() > 0) {
+                cursor.moveToFirst();
+                int newMileage = mMileage + cursor.getInt(2);
+                int newMeter = mMeter + cursor.getInt(3);
+                values.put(DatabaseHelper.MILEAGE_FIELD, newMileage);
+                values.put(DatabaseHelper.METER_FIELD, newMeter);
+                cr.update(uri, values, DatabaseHelper.ID + "=" + cursor.getInt(0), null);
+            } else {
+                values.put(DatabaseHelper.MILEAGE_FIELD, mMileage);
+                values.put(DatabaseHelper.METER_FIELD, mMeter);
+                cr.insert(uri, values);
+            }
+            cursor.close();
+        } else {
+            values.put(DatabaseHelper.MILEAGE_FIELD, mMileage);
+            values.put(DatabaseHelper.METER_FIELD, mMeter);
+            cr.insert(uri, values);
+        }
+        //test
+        Cursor c = cr.query(uri, projection, selection, new String[] {currentDateTimeString}, null);
+        if (c != null && c.getCount() > 0) {
+            c.moveToFirst();
+            int mil = c.getInt(2);
+            int met = c.getInt(3);
+            Log.d(TAG, mil + " and " + met);
+            c.close();
+        }
+        mMileage = 0;
+        mMeter = 0;
+        mMileageTextView.setText(String.valueOf(mMileage));
+        mMileageTextView.invalidate();
+        mKmTextView.setText(String.valueOf(mMeter));
+        mKmTextView.invalidate();
     }
 
     private boolean permissionCheck() {
@@ -149,6 +222,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         }
         return true;
     }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -157,23 +231,12 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         intent.putExtra(MiniViewService.KEY_SHOW, false);
         getActivity().sendBroadcast(intent);
     }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Intent intent = new Intent();
-        intent.setAction(MiniViewService.SHOW_MINIVIEW);
-        intent.putExtra(MiniViewService.KEY_SHOW, true);
-        getActivity().sendBroadcast(intent);
-    }
-
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(RUNNINGMAP_STATE, mRunningMap);
         outState.putInt(MILEAGE, mMileage);
-        outState.putFloat(KILOMETERS, mKilometers);
+        outState.putFloat(METER, mMeter);
     }
 
     private BroadcastReceiver mBRReceiver = new BroadcastReceiver() {
@@ -183,12 +246,14 @@ public class MainFragment extends Fragment implements View.OnClickListener {
                 mMileage = intent.getIntExtra(MiniViewService.KEY_MILEAGE, 0);
                 mMileageTextView.setText(String.valueOf(mMileage));
                 mMileageTextView.invalidate();
-                mKilometers = intent.getFloatExtra(MiniViewService.KEY_KILOMETERS, 0);
-                mKmTextView.setText(String.format("%.2f", mKilometers));
+                mMeter = intent.getIntExtra(MiniViewService.KEY_METER, 0);
+                mKmTextView.setText(MiniViewService.getMeterText(mMeter));
                 mKmTextView.invalidate();
                 mFunctionButton.setText(getString(R.string.stopButton));
                 mFunctionButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
-                updateLocationInfo();
+                mRunningMap = true;
+                //TODO
+//                updateLocationInfo();
             }
         }
     };

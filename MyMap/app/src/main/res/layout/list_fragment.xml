@@ -10,4 +10,13 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:id="@+id/item_list" />
+    <TextView
+        android:id="@+id/emptyList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:text="기록이 없습니다."
+        android:textSize="50sp"
+        android:gravity="center"
+        android:visibility="gone"/>
 </LinearLayout>

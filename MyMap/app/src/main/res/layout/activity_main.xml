@@ -18,24 +18,48 @@
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:orientation="horizontal">
-        <Button
-            android:id="@+id/mainButton"
+        <LinearLayout
+            android:id="@+id/mainButtonBG"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="만보기 화면"
-            android:textSize="35sp"
-            android:background="@android:color/holo_green_light"/>
-        <Button
-            android:id="@+id/listButton"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:background="@android:color/holo_red_light"
+            >
+            <Button
+                android:id="@+id/mainButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="만보기 화면"
+                android:textSize="35sp"
+                android:background="@android:color/holo_green_light"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/listButtonBG"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="만보기 기록"
-            android:textSize="35sp"
-            android:background="@android:color/holo_blue_light"/>
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:background="@android:color/holo_red_light"
+            >
+            <Button
+                android:id="@+id/listButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="만보기 기록"
+                android:textSize="35sp"
+                android:background="@android:color/holo_blue_light"/>
+        </LinearLayout>
     </LinearLayout>
-    <android.support.v4.widget.Space
+    <Space
         android:layout_width="match_parent"
         android:layout_height="10dp" />
     <FrameLayout

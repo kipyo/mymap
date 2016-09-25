@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">만보기</string>
     <string name="mainTabTitle">만보기 화면</string>
     <string name="listTabTitle">만보기 기록</string>
     <string name="currentLocation">현재 위치</string>

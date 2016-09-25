@@ -54,8 +54,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
         fragmentTransaction.add(R.id.fragmentLayout, mMainFragment);
         fragmentTransaction.commit();
         mIsMainShow = true;
+        updateButtonStyle();
     }
 
+    private void updateButtonStyle() {
+        if (mIsMainShow) {
+            findViewById(R.id.mainButtonBG).setBackgroundColor(getResources().getColor(android.R.color.holo_red_light));
+            findViewById(R.id.listButtonBG).setBackgroundColor(getResources().getColor(android.R.color.white));
+        } else {
+            findViewById(R.id.mainButtonBG).setBackgroundColor(getResources().getColor(android.R.color.white));
+            findViewById(R.id.listButtonBG).setBackgroundColor(getResources().getColor(android.R.color.holo_red_light));
+        }
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -81,19 +91,39 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 newFragment = mListFragment;
                 mIsMainShow = false;
             } else {
-                //do nothing
+                return;
             }
         } else {
             if (view.getId() == R.id.mainButton) {
                 newFragment = mMainFragment;
                 mIsMainShow = true;
             } else {
-                //do nothing
+                return;
             }
         }
         FragmentManager fm = getFragmentManager();
         FragmentTransaction fragmentTransaction = fm.beginTransaction();
         fragmentTransaction.replace(R.id.fragmentLayout, newFragment);
         fragmentTransaction.commit();
+        updateButtonStyle();
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Intent intent = new Intent();
+        intent.setAction(MiniViewService.SHOW_MINIVIEW);
+        intent.putExtra(MiniViewService.KEY_SHOW, false);
+        sendBroadcast(intent);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Intent intent = new Intent();
+        intent.setAction(MiniViewService.SHOW_MINIVIEW);
+        intent.putExtra(MiniViewService.KEY_SHOW, true);
+        sendBroadcast(intent);
+    }
+
 }
