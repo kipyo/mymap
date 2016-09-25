@@ -18,10 +18,10 @@ public class ListCursorAdapter extends CursorAdapter {
     private static final int DB_MILEAGE = 2;
     private static final int DB_KM = 3;
     public static final String[] COLUMNS = {
-            DatabaseHelper.ID,
-            DatabaseHelper.DATE_FIELD,
-            DatabaseHelper.MILEAGE_FIELD,
-            DatabaseHelper.METER_FIELD,
+            DBConstants.ID,
+            DBConstants.DATE,
+            DBConstants.MILEAGE,
+            DBConstants.METER,
     };
 
     public ListCursorAdapter(Context context, Cursor cursor) {

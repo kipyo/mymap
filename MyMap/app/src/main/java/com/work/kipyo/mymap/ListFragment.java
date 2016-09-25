@@ -38,9 +38,8 @@ public class ListFragment extends Fragment implements LoaderManager.LoaderCallba
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Uri uri = Uri.parse("content://" + MapProvider.MAP_URI);
-        String selection ="";
-        return new CursorLoader(getActivity(), uri, ListCursorAdapter.COLUMNS, selection, null, ListCursorAdapter.COLUMNS[ListCursorAdapter.DB_DATE] + " COLLATE LOCALIZED DESC");
+        Uri uri = DBConstants.CONTENT_URI;
+        return new CursorLoader(getActivity(), uri, ListCursorAdapter.COLUMNS, null, null, ListCursorAdapter.COLUMNS[ListCursorAdapter.DB_DATE] + " COLLATE LOCALIZED DESC");
     }
 
     @Override

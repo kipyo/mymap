@@ -9,18 +9,15 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 
 public class DatabaseHelper extends SQLiteOpenHelper {
-    public final static String ID = "_id";
-    public final static String DATE_FIELD = "date";
-    public final static String MILEAGE_FIELD = "mileage";
-    public final static String METER_FIELD = "meter";
     public DatabaseHelper(Context context) {
-        super(context, MapProvider.MAPDB, null, 1);
+        super(context, DBConstants.DB_NAME, null, 1);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String sql = "CREATE TABLE " + MapProvider.MAPDB
-                + "(" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + DATE_FIELD + " TEXT, " + MILEAGE_FIELD + " INTEGER, " + METER_FIELD + " INTEGER)";
+        String sql = "CREATE TABLE " + DBConstants.DB_NAME
+                + "(" + DBConstants.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + DBConstants.DATE + " TEXT, "
+                + DBConstants.MILEAGE + " INTEGER, " + DBConstants.METER + " INTEGER)";
         db.execSQL(sql);
     }
 

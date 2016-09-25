@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/dateTextView"
         android:gravity="right"
-        android:textSize="25sp"
+        android:textSize="20sp"
         android:layout_gravity="center_vertical"
         tools:text="2016.09.23" />
 
@@ -39,7 +39,7 @@
         android:layout_gravity="center_vertical"
         android:textSize="35sp"
         android:layout_weight="1"
-        android:paddingRight="20dp"
+        android:paddingRight="10dp"
         tools:text="9876" />
 
     <TextView
@@ -51,7 +51,7 @@
         android:id="@+id/kmTextView"
         android:layout_weight="0.4"
         android:paddingRight="5dp"
-        android:textSize="25sp"
+        android:textSize="20sp"
         tools:text="68m" />
 
 </LinearLayout>

@@ -17,8 +17,6 @@ public class MapProvider extends ContentProvider {
 
     SQLiteDatabase db;
     UriMatcher uriMatcher;
-    public static final String MAP_URI = "com.work.kipyo.mymap.MapProvider";
-    public static final String MAPDB = "MAPDB";
 
     static final int SPECIPIC_MESSAGE = 0;
 
@@ -31,7 +29,7 @@ public class MapProvider extends ContentProvider {
                 selection += "_id=" + uri.getLastPathSegment();
             }
         }
-        return db.delete(MAPDB, selection,
+        return db.delete(DBConstants.DB_NAME, selection,
                 selectionArgs);
     }
 
@@ -49,7 +47,7 @@ public class MapProvider extends ContentProvider {
             return null;
         }
 
-        long rowId = db.insert(MAPDB, null, values);
+        long rowId = db.insert(DBConstants.DB_NAME, null, values);
 
         if (rowId > 0) {
             Uri resultUri = ContentUris.withAppendedId(uri, rowId);
@@ -63,7 +61,7 @@ public class MapProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        uriMatcher.addURI(MAP_URI, "#",
+        uriMatcher.addURI(DBConstants.MAP_URI, "#",
                 SPECIPIC_MESSAGE);
         db = new DatabaseHelper(getContext()).getWritableDatabase();
         if (db == null) {
@@ -77,7 +75,7 @@ public class MapProvider extends ContentProvider {
                         String[] selectionArgs, String sortOrder) {
 
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        qb.setTables(MAPDB);
+        qb.setTables(DBConstants.DB_NAME);
 
         if (uriMatcher.match(uri) == SPECIPIC_MESSAGE) {
             qb.appendWhere("_id=" + uri.getLastPathSegment());
@@ -98,7 +96,7 @@ public class MapProvider extends ContentProvider {
             }
         }
 
-        return db.update(MAPDB, values, selection,
+        return db.update(DBConstants.DB_NAME, values, selection,
                 selectionArgs);
     }
 

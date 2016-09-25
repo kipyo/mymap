@@ -15,6 +15,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,6 +28,7 @@ import android.widget.Toast;
  */
 
 public class MiniViewService extends Service implements View.OnTouchListener, SensorEventListener {
+    private static final String TAG = "MiniViewService";
     private View mView;
     private TextView mMileageTextView;
     private TextView mMiniKmText;
@@ -90,7 +92,6 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
         mMiniKmText.setText(getMeterText(mMeter));
 
         updatePreference();
-        unregisterRestartAlarm();
     }
 
     @Override
@@ -102,6 +103,7 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "onDestory");
         super.onDestroy();
         if (mView != null) {
             mManager.removeView(mView);
@@ -110,25 +112,8 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
         if (mSensorManager != null) {
             mSensorManager.unregisterListener(this);
         }
-        registerRestartAlarm();
     }
 
-    private void registerRestartAlarm() {
-        Intent intent = new Intent(this, RestartService.class);
-        intent.setAction(RestartService.RESTART_ACTION);
-        PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
-        long firstTime = SystemClock.elapsedRealtime();
-        firstTime += 2*1000;
-        AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
-        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, 10*1000, sender);
-    }
-    private void unregisterRestartAlarm() {
-        Intent intent = new Intent(this, RestartService.class);
-        intent.setAction(RestartService.RESTART_ACTION);
-        PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
-        AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
-        am.cancel(sender);
-    }
     private void updatePreference() {
         SharedPreferences.Editor editor = mPreference.edit();
         editor.putBoolean(KEY_RUNNING, true);
@@ -189,7 +174,7 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
                 float positionDelta = Math.abs(x + y + z - (mPrivData.x + mPrivData.y + mPrivData.z));
                 float delta = positionDelta / timeGap * 10000;
                 //1보로 인정 가능한 이동 거리
-                if (delta > 880) {
+                if (delta > 900) {
                     mStep ++;
                     mMileageTextView.setText(String.valueOf(mStep));
                     mMileageTextView.invalidate();

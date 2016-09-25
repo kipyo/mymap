@@ -126,40 +126,31 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         Date date = new Date(System.currentTimeMillis());
         String currentDateTimeString = new SimpleDateFormat("yyyy.MM.dd").format(date);
         ContentValues values = new ContentValues();
-        values.put(DatabaseHelper.DATE_FIELD, currentDateTimeString);
+        values.put(DBConstants.DATE, currentDateTimeString);
 
-        Uri uri = Uri.parse("content://" + MapProvider.MAP_URI);
+        Uri uri = DBConstants.CONTENT_URI;
         ContentResolver cr = getActivity().getContentResolver();
-        String[] projection = { DatabaseHelper.ID, DatabaseHelper.DATE_FIELD, DatabaseHelper.MILEAGE_FIELD, DatabaseHelper.METER_FIELD };
-        String selection = DatabaseHelper.DATE_FIELD + "=?";
+        String[] projection = { DBConstants.ID, DBConstants.DATE, DBConstants.MILEAGE, DBConstants.METER };
+        String selection = DBConstants.DATE + "=?";
         Cursor cursor = cr.query(uri, projection, selection, new String[] {currentDateTimeString}, null);
         if (cursor != null) {
             if (cursor.getCount() > 0) {
                 cursor.moveToFirst();
                 int newMileage = mMileage + cursor.getInt(2);
                 int newMeter = mMeter + cursor.getInt(3);
-                values.put(DatabaseHelper.MILEAGE_FIELD, newMileage);
-                values.put(DatabaseHelper.METER_FIELD, newMeter);
-                cr.update(uri, values, DatabaseHelper.ID + "=" + cursor.getInt(0), null);
+                values.put(DBConstants.MILEAGE, newMileage);
+                values.put(DBConstants.METER, newMeter);
+                cr.update(uri, values, DBConstants.ID + "=" + cursor.getInt(0), null);
             } else {
-                values.put(DatabaseHelper.MILEAGE_FIELD, mMileage);
-                values.put(DatabaseHelper.METER_FIELD, mMeter);
+                values.put(DBConstants.MILEAGE, mMileage);
+                values.put(DBConstants.METER, mMeter);
                 cr.insert(uri, values);
             }
             cursor.close();
         } else {
-            values.put(DatabaseHelper.MILEAGE_FIELD, mMileage);
-            values.put(DatabaseHelper.METER_FIELD, mMeter);
+            values.put(DBConstants.MILEAGE, mMileage);
+            values.put(DBConstants.METER, mMeter);
             cr.insert(uri, values);
-        }
-        //test
-        Cursor c = cr.query(uri, projection, selection, new String[] {currentDateTimeString}, null);
-        if (c != null && c.getCount() > 0) {
-            c.moveToFirst();
-            int mil = c.getInt(2);
-            int met = c.getInt(3);
-            Log.d(TAG, mil + " and " + met);
-            c.close();
         }
         mMileage = 0;
         mMeter = 0;
@@ -189,11 +180,14 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onStart() {
         super.onStart();
+        hiddenMiniView();
+        mLocationInter.updateLocation();
+    }
+    private void hiddenMiniView() {
         Intent intent = new Intent();
         intent.setAction(MiniViewService.SHOW_MINIVIEW);
         intent.putExtra(MiniViewService.KEY_SHOW, false);
         getActivity().sendBroadcast(intent);
-        mLocationInter.updateLocation();
     }
     @Override
     public void onSaveInstanceState(Bundle outState) {

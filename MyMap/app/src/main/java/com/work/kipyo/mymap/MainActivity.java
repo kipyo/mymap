@@ -93,12 +93,7 @@ public class MainActivity extends NMapActivity implements View.OnClickListener, 
         mMainFragment = new MainFragment();
         mMainFragment.setLocationInter(this);
         mListFragment = new ListFragment();
-        FragmentManager fm = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-        fragmentTransaction.add(R.id.fragmentLayout, mMainFragment);
-        fragmentTransaction.commit();
-        mIsMainShow = true;
-        updateButtonStyle();
+        replaceFragment(mMainFragment);
         //현재 위치좌표 가져오기
         mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         mLocationListener = new MyLocationListener();
@@ -108,66 +103,51 @@ public class MainActivity extends NMapActivity implements View.OnClickListener, 
         mMapView.setClientId(clientId);
         // set data provider listener
         super.setMapDataProviderListener(onDataProviderListener);
+        // 이동에 따른 이벤트를 받는 리시버 등록
+        registUpdateReceiver();
+    }
 
+    private void registUpdateReceiver() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(MiniViewService.UPDATE_ACTION);
         registerReceiver(mBRReceiver, filter);
     }
-
     private void updateButtonStyle() {
-        if (mIsMainShow) {
-            findViewById(R.id.mainButtonBG).setBackgroundColor(getResources().getColor(android.R.color.holo_red_light));
-            findViewById(R.id.listButtonBG).setBackgroundColor(getResources().getColor(android.R.color.white));
-        } else {
-            findViewById(R.id.mainButtonBG).setBackgroundColor(getResources().getColor(android.R.color.white));
-            findViewById(R.id.listButtonBG).setBackgroundColor(getResources().getColor(android.R.color.holo_red_light));
-        }
-    }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        int activeColor = getResources().getColor(android.R.color.holo_red_light);
+        int inactiveColor = getResources().getColor(android.R.color.white);
+        findViewById(R.id.mainButtonBG).setBackgroundColor(mIsMainShow ? activeColor : inactiveColor);
+        findViewById(R.id.listButtonBG).setBackgroundColor(!mIsMainShow ? activeColor : inactiveColor);
     }
 
     @Override
     public void onClick(View view) {
         Fragment newFragment = null;
-        if (mIsMainShow) {
-            if (view.getId() == R.id.listButton) {
-                newFragment = mListFragment;
-                mIsMainShow = false;
-            } else {
-                return;
-            }
+        //fragmewnt가 현재와 다른 경우에만 replace하도록 함
+        if (mIsMainShow && view.getId() == R.id.listButton) {
+            newFragment = mListFragment;
+        } else if (!mIsMainShow && view.getId() == R.id.mainButton) {
+            newFragment = mMainFragment;
         } else {
-            if (view.getId() == R.id.mainButton) {
-                newFragment = mMainFragment;
-                mIsMainShow = true;
-            } else {
-                return;
-            }
+            return;
         }
-        FragmentManager fm = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-        fragmentTransaction.replace(R.id.fragmentLayout, newFragment);
-        fragmentTransaction.commit();
-        updateButtonStyle();
+        replaceFragment(newFragment);
         if (!mIsMainShow) {
             mLocationManager.removeUpdates(mLocationListener);
         }
     }
 
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentLayout, fragment);
+        fragmentTransaction.commit();
+        if (fragment instanceof MainFragment) {
+            mIsMainShow = true;
+        } else {
+            mIsMainShow = false;
+        }
+        updateButtonStyle();
+    }
     @Override
     public void onStart() {
         super.onStart();
