@@ -80,9 +80,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         mLocationTextView = (TextView) rootView.findViewById(R.id.locationText);
         mFunctionButton = (Button) rootView.findViewById(R.id.functionButton);
         mFunctionButton.setOnClickListener(this);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(MiniViewService.UPDATE_ACTION);
-        getActivity().registerReceiver(mBRReceiver, filter);
+
         return rootView;
     }
 
@@ -192,21 +190,18 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         outState.putFloat(METER, mMeter);
     }
 
-    private BroadcastReceiver mBRReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (MiniViewService.UPDATE_ACTION.equals(intent.getAction())) {
-                mMileage = intent.getIntExtra(MiniViewService.KEY_MILEAGE, 0);
-                mMileageTextView.setText(String.valueOf(mMileage));
-                mMileageTextView.invalidate();
-                mMeter = intent.getIntExtra(MiniViewService.KEY_METER, 0);
-                mKmTextView.setText(MiniViewService.getMeterText(mMeter));
-                mKmTextView.invalidate();
-                mFunctionButton.setText(getString(R.string.stopButton));
-                mFunctionButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
-                mRunningMap = true;
-                mLocationInter.updateLocation();
-            }
+    public void updateTextView(Intent intent) {
+        if (MiniViewService.UPDATE_ACTION.equals(intent.getAction())) {
+            mMileage = intent.getIntExtra(MiniViewService.KEY_MILEAGE, 0);
+            mMileageTextView.setText(String.valueOf(mMileage));
+            mMileageTextView.invalidate();
+            mMeter = intent.getIntExtra(MiniViewService.KEY_METER, 0);
+            mKmTextView.setText(MiniViewService.getMeterText(mMeter));
+            mKmTextView.invalidate();
+            mFunctionButton.setText(getString(R.string.stopButton));
+            mFunctionButton.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+            mRunningMap = true;
+            mLocationInter.updateLocation();
         }
     };
 

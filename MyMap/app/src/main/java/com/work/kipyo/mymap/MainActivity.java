@@ -2,8 +2,10 @@ package com.work.kipyo.mymap;
 
 import android.Manifest;
 import android.app.*;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -107,6 +109,9 @@ public class MainActivity extends NMapActivity implements View.OnClickListener, 
         // set data provider listener
         super.setMapDataProviderListener(onDataProviderListener);
 
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(MiniViewService.UPDATE_ACTION);
+        registerReceiver(mBRReceiver, filter);
     }
 
     private void updateButtonStyle() {
@@ -158,6 +163,9 @@ public class MainActivity extends NMapActivity implements View.OnClickListener, 
         fragmentTransaction.replace(R.id.fragmentLayout, newFragment);
         fragmentTransaction.commit();
         updateButtonStyle();
+        if (!mIsMainShow) {
+            mLocationManager.removeUpdates(mLocationListener);
+        }
     }
 
     @Override
@@ -179,6 +187,14 @@ public class MainActivity extends NMapActivity implements View.OnClickListener, 
         mLocationManager.removeUpdates(mLocationListener);
     }
 
+    private BroadcastReceiver mBRReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mIsMainShow && MiniViewService.UPDATE_ACTION.equals(intent.getAction())) {
+                mMainFragment.updateTextView(intent);
+            }
+        }
+    };
     /* NMapDataProvider Listener */
     private final OnDataProviderListener onDataProviderListener = new OnDataProviderListener() {
         @Override
