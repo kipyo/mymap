@@ -54,6 +54,8 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     private final static String MILEAGE = "Mileage";
     private final static String METER = "Meter";
     private SharedPreferences mPreference;
+    private final static int PERMISSION_RESULT = 2;
+
     public MainFragment() {
     }
 
@@ -167,10 +169,12 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         editor.commit();
     }
     private boolean permissionCheck() {
-        if (Build.VERSION.SDK_INT >= 23) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             boolean canDrawOverlays = Settings.canDrawOverlays(getActivity());
             if (!canDrawOverlays) {
-                Toast.makeText(getActivity(), "이 앱은 다른 화면 위에 그리기 위한 권한이 필요합니다.", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getActivity().getPackageName()));
+                startActivityForResult(intent, PERMISSION_RESULT);
                 return false;
             }
         }

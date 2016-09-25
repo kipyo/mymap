@@ -37,7 +37,6 @@ public class MainActivity extends NMapActivity implements View.OnClickListener, 
     private MainFragment mMainFragment;
     private ListFragment mListFragment;
     private boolean mIsMainShow = false;
-    private final static int PERMISSION_RESULT = 2;
     private LocationManager mLocationManager;
     private MyLocationListener mLocationListener;
     private NMapView mMapView;
@@ -46,16 +45,6 @@ public class MainActivity extends NMapActivity implements View.OnClickListener, 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //MiniView를 다른 앱 화면 위에 띄우기 위한 퍼미션 확인
-        if (Build.VERSION.SDK_INT >= 23) {
-            boolean canDrawOverlays = Settings.canDrawOverlays(this);
-            if (!canDrawOverlays) {
-
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:" + getPackageName()));
-                startActivityForResult(intent, PERMISSION_RESULT);
-            }
-        }
         setContentView(R.layout.activity_main);
         mMainButton = (Button)findViewById(R.id.mainButton);
         mMainButton.setOnClickListener(this);
