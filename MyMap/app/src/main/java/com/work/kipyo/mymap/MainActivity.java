@@ -1,41 +1,60 @@
 package com.work.kipyo.mymap;
 
+import android.app.*;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import com.nhn.android.maps.NMapView;
 
-    private SectionsPagerAdapter mSectionsPagerAdapter;
+public class MainActivity extends Activity implements View.OnClickListener {
 
-    private ViewPager mViewPager;
+    private Button mMainButton;
+    private Button mListButton;
     private Fragment mMainFragment;
     private Fragment mListFragment;
+    private boolean mIsMainShow = false;
+    private final static int PERMISSION_RESULT = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        if (Build.VERSION.SDK_INT >= 23) {
+            boolean canDrawOverlays = Settings.canDrawOverlays(this);
+            if (!canDrawOverlays) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivityForResult(intent, PERMISSION_RESULT);
+            }
+        }
+        initActivity();
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
     }
 
+    private void initActivity() {
+        setContentView(R.layout.activity_main);
+        mMainButton = (Button)findViewById(R.id.mainButton);
+        mMainButton.setOnClickListener(this);
+        mListButton = (Button)findViewById(R.id.listButton);
+        mListButton.setOnClickListener(this);
+        mMainFragment = new MainFragment();
+        mListFragment = new ListFragment();
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+        fragmentTransaction.add(R.id.fragmentLayout, mMainFragment);
+        fragmentTransaction.commit();
+        mIsMainShow = true;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -54,41 +73,27 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        private static final String TAG = "SectionsPagerAdapter";
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            if (position == 0) {
-                if (mMainFragment == null) {
-                    mMainFragment = new MainFragment();
-                }
-                return mMainFragment;
+    @Override
+    public void onClick(View view) {
+        Fragment newFragment = null;
+        if (mIsMainShow) {
+            if (view.getId() == R.id.listButton) {
+                newFragment = mListFragment;
+                mIsMainShow = false;
             } else {
-                if (mListFragment == null) {
-                    mListFragment = new ListFragment();
-                }
-                return mListFragment;
+                //do nothing
+            }
+        } else {
+            if (view.getId() == R.id.mainButton) {
+                newFragment = mMainFragment;
+                mIsMainShow = true;
+            } else {
+                //do nothing
             }
         }
-
-        @Override
-        public int getCount() {
-            return 2;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            if (position == 0) {
-                return getString(R.string.mainTabTitle);
-            } else {
-                return getString(R.string.listTabTitle);
-            }
-        }
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentLayout, newFragment);
+        fragmentTransaction.commit();
     }
 }

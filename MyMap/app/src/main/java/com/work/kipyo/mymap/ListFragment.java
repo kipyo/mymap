@@ -1,13 +1,13 @@
 package com.work.kipyo.mymap;
 
+import android.app.Fragment;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,10 +34,10 @@ public class ListFragment extends Fragment implements LoaderManager.LoaderCallba
         mListView = (ListView)rootView.findViewById(R.id.item_list);
         if (FOR_TEST) {
             TestCursor testCursor = new TestCursor();
-            mListAdapter = new ListCursorAdapter(getContext(), testCursor.getCursor());
+            mListAdapter = new ListCursorAdapter(getActivity(), testCursor.getCursor());
         } else {
             getLoaderManager().initLoader(0, null, this);
-            mListAdapter = new ListCursorAdapter(getContext(), null);
+            mListAdapter = new ListCursorAdapter(getActivity(), null);
         }
         mListView.setAdapter(mListAdapter);
 
@@ -49,7 +49,7 @@ public class ListFragment extends Fragment implements LoaderManager.LoaderCallba
         //TODO
         Uri uri = Uri.parse("");
         String selection ="";
-        return new CursorLoader(getContext(), uri, ListCursorAdapter.COLUMNS, selection, null, ListCursorAdapter.COLUMNS[ListCursorAdapter.DB_DATE] + " COLLATE LOCALIZED ASC");
+        return new CursorLoader(getActivity(), uri, ListCursorAdapter.COLUMNS, selection, null, ListCursorAdapter.COLUMNS[ListCursorAdapter.DB_DATE] + " COLLATE LOCALIZED ASC");
     }
 
     @Override

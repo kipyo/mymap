@@ -1,15 +1,16 @@
 package com.work.kipyo.mymap;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.PixelFormat;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -38,7 +39,9 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
     public final static String UPDATE_ACTION = "com.work.kipyo.mymap.UpdateMileage";
     public final static String KEY_MILEAGE = "KeyMileage";
     public final static String KEY_KILOMETERS = "KeyKilometers";
-    @Nullable
+    public final static String SHOW_MINIVIEW = "com.work.kipyo.mymap.ShowMiniView";
+    public final static String KEY_SHOW = "KeyShow";
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -49,6 +52,12 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
         super.onCreate();
         LayoutInflater mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mView = mInflater.inflate(R.layout.mini_view, null);
+        mView.setVisibility(View.INVISIBLE);
+        //main 화면의 표시 여부를 확인하기 위한 BR 등록
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(SHOW_MINIVIEW);
+        registerReceiver(mBRReceiver, filter);
+
         mMileageTextView = (TextView) mView.findViewById(R.id.miniMileageText);
         mMileageTextView.setText(String.valueOf(mStep));
         mMiniKmText = (TextView) mView.findViewById(R.id.miniKmText);
@@ -103,9 +112,6 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
                 break;
 
             case MotionEvent.ACTION_UP:
-                if (!isMove) {
-                    Toast.makeText(this, "Touch Up", Toast.LENGTH_SHORT).show();
-                }
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -153,11 +159,7 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
                     mKilometers += positionDelta / 10000;
                     mMiniKmText.setText(String.format("%.2f", mKilometers));
                     mMiniKmText.invalidate();
-                    Intent intent = new Intent();
-                    intent.setAction(UPDATE_ACTION);
-                    intent.putExtra(KEY_MILEAGE, mStep);
-                    intent.putExtra(KEY_KILOMETERS, mKilometers);
-                    sendBroadcast(intent);
+                    sendCurrentData();
                 }
                 mPrivData.x = x;
                 mPrivData.y = y;
@@ -166,10 +168,31 @@ public class MiniViewService extends Service implements View.OnTouchListener, Se
         }
     }
 
+    private void sendCurrentData() {
+        Intent intent = new Intent();
+        intent.setAction(UPDATE_ACTION);
+        intent.putExtra(KEY_MILEAGE, mStep);
+        intent.putExtra(KEY_KILOMETERS, mKilometers);
+        sendBroadcast(intent);
+    }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         //Do nothing
     }
+
+    private BroadcastReceiver mBRReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (SHOW_MINIVIEW.equals(intent.getAction())) {
+                boolean show = intent.getBooleanExtra(KEY_SHOW, false);
+                mView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+                mView.invalidate();
+                if (!show) {
+                    sendCurrentData();
+                }
+            }
+        }
+    };
 }
 
 class PrivData {
